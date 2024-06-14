@@ -102,6 +102,9 @@ class BaseValidator:
         self.plots = {}
         self.callbacks = _callbacks or callbacks.get_default_callbacks()
 
+        # Multispectral
+        self.bands_to_apply = self.args.bands_to_apply
+
     @smart_inference_mode()
     def __call__(self, trainer=None, model=None):
         """Supports validation of a pre-trained model if passed or a model being trained if trainer is passed (trainer
@@ -151,7 +154,7 @@ class BaseValidator:
             if not pt:
                 self.args.rect = False
             self.stride = model.stride  # used in get_dataloader() for padding
-            self.dataloader = self.dataloader or self.get_dataloader(self.data.get(self.args.split), self.args.batch)
+            self.dataloader = self.dataloader or self.get_dataloader(self.data.get(self.args.split), self.args.batch, bands_to_apply=self.bands_to_apply)
 
             model.eval()
             model.warmup(imgsz=(1 if pt else self.args.batch, 3, imgsz, imgsz))  # warmup
