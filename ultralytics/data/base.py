@@ -16,7 +16,7 @@ from torch.utils.data import Dataset
 
 from ultralytics.data.utils import FORMATS_HELP_MSG, HELP_URL, IMG_FORMATS
 from ultralytics.utils import DEFAULT_CFG, LOCAL_RANK, LOGGER, NUM_THREADS, TQDM
-
+from ultralytics.utils import is_vegetation_index, get_band_combination
 
 class BaseDataset(Dataset):
     """
@@ -61,6 +61,7 @@ class BaseDataset(Dataset):
         single_cls=False,
         classes=None,
         fraction=1.0,
+        bands_to_apply=None, # Multispectral bands to apply
     ):
         """Initialize BaseDataset with given configuration and options."""
         super().__init__()
@@ -78,6 +79,7 @@ class BaseDataset(Dataset):
         self.batch_size = batch_size
         self.stride = stride
         self.pad = pad
+        self.bands_to_apply = bands_to_apply
         if self.rect:
             assert self.batch_size is not None
             self.set_rectangle()
@@ -154,6 +156,33 @@ class BaseDataset(Dataset):
                     im = cv2.imread(f)  # BGR
             else:  # read image
                 im = cv2.imread(f)  # BGR
+                path = self.im_files[i]
+                if self.bands_to_apply and self.bands_to_apply != ["RGB"]:
+                    bands = []
+                    root_dir = os.path.dirname(path)
+                    imgName = Path(path).stem
+                    for band_name in self.bands_to_apply:
+                        print("----------------------------------------------------------------")
+                        print(band_name)
+                        if band_name == 'RGB' or band_name == 'RGB'.lower():
+                            im_rgb = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
+                            bands.append(im_rgb)
+                        elif is_vegetation_index(band_name):
+                            ms_image = []
+                            for band in ['Red', 'Green', 'Blue', 'RE', 'NIR']:
+                                ms_image.append(cv2.imread(os.path.join(root_dir, f'{imgName}_{band}.TIF'),cv2.IMREAD_GRAYSCALE))
+                            ms_image = np.dstack(ms_image)
+                            im_vi = get_band_combination(ms_image,band_name)
+
+                            #im_vi = (im_vi / 255).astype(np.uint8)
+                            #cv2.imwrite('RESULT.JPG',im_vi)
+                            bands.append(im_vi)
+                        else:
+                            bands.append(cv2.imread(os.path.join(root_dir, f'{imgName}_{band_name}.TIF'), cv2.IMREAD_GRAYSCALE))
+                    im = np.dstack(bands)
+                else:
+                    im = cv2.imread(path)  # BGR
+                assert im is not None, 'Image Not Found ' + path
             if im is None:
                 raise FileNotFoundError(f"Image Not Found {f}")
 
