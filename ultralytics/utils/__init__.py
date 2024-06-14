@@ -1076,3 +1076,6 @@ torch.save = torch_save
 if WINDOWS:
     # Apply cv2 patches for non-ASCII and non-UTF characters in image paths
     cv2.imread, cv2.imwrite, cv2.imshow = imread, imwrite, imshow
+
+# Multispectral support
+from .utils import is_vegetation_index, get_band_combination
