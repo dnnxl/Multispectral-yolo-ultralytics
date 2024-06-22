@@ -156,8 +156,12 @@ class BaseValidator:
             self.stride = model.stride  # used in get_dataloader() for padding
             self.dataloader = self.dataloader or self.get_dataloader(self.data.get(self.args.split), self.args.batch, bands_to_apply=self.bands_to_apply)
 
+            n_channels = len(self.bands_to_apply)
+            if "RGB" in self.bands_to_apply:
+                n_channels += 2 
+                
             model.eval()
-            model.warmup(imgsz=(1 if pt else self.args.batch, len(self.bands_to_apply), imgsz, imgsz))  # warmup
+            model.warmup(imgsz=(1 if pt else self.args.batch, n_channels, imgsz, imgsz))  # warmup
 
         self.run_callbacks("on_val_start")
         dt = (
