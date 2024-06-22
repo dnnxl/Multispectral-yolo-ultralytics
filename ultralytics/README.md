@@ -73,6 +73,7 @@
 105.  # Multispectral
 106.  self.bands_to_apply = self.args.bands_to_apply
 157. self.dataloader = self.dataloader or self.get_dataloader(self.data.get(self.args.split), self.args.batch, bands_to_apply=self.bands_to_apply)
+160. model.warmup(imgsz=(1 if pt else self.args.batch, len(self.bands_to_apply), imgsz, imgsz))  # warmup
 ```
 
 - `/models/yolo/detect/train.py`: Get the number of channels of the model when init from the data.yaml (`self.data["ch"]`) file.

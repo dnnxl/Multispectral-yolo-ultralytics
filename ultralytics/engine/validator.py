@@ -157,7 +157,7 @@ class BaseValidator:
             self.dataloader = self.dataloader or self.get_dataloader(self.data.get(self.args.split), self.args.batch, bands_to_apply=self.bands_to_apply)
 
             model.eval()
-            model.warmup(imgsz=(1 if pt else self.args.batch, 3, imgsz, imgsz))  # warmup
+            model.warmup(imgsz=(1 if pt else self.args.batch, len(self.bands_to_apply), imgsz, imgsz))  # warmup
 
         self.run_callbacks("on_val_start")
         dt = (
