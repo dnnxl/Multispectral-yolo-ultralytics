@@ -162,8 +162,6 @@ class BaseDataset(Dataset):
                     root_dir = os.path.dirname(path)
                     imgName = Path(path).stem
                     for band_name in self.bands_to_apply:
-                        print("----------------------------------------------------------------")
-                        print(band_name)
                         if band_name == 'RGB' or band_name == 'RGB'.lower():
                             im_rgb = cv2.cvtColor(cv2.imread(path), cv2.COLOR_BGR2RGB)
                             bands.append(im_rgb)
